@@ -208,6 +208,96 @@ body.dsr-open #areatab{bottom:152px}
 .abtn.on{background:var(--acc2);border-color:var(--acc);color:#00131d}
 .abtn.on small{color:#00131d;opacity:.75}
 #areatab.busy .abtn{pointer-events:none;opacity:.7}
+</style>
+<link rel="stylesheet" href="rads-map/v1/rads-map.css">
+<style>
+/* ===== RADS iframe layout =====
+   The explorer's own panels are moved into one title chip and one collapsible Layers
+   panel (see the script at the end) and restyled to the RADS look. Map layers and their
+   colours are untouched. */
+:root{--panel:#fff;--line:#D6D6D6;--tx:#1A1A1A;--mut:#5E5E5E;--acc:#D01C24;--acc2:#D01C24}
+body{color:var(--tx)}
+.panel{border-radius:0;box-shadow:var(--rads-shadow);backdrop-filter:none}
+#rail,#brandSub,#base,#screens{display:none!important}
+
+/* chip: the area name */
+.rads-chip #brandName{margin:0;padding:0 12px;min-width:0;flex:1 1 auto;font-size:14px;font-weight:600;
+  line-height:38px;color:var(--rads-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* MapLibre zoom/compass under the chip, flat */
+.maplibregl-ctrl-top-right{right:auto;left:0;top:calc(var(--rads-gap) + var(--rads-ctl) - 2px)}
+.maplibregl-ctrl-top-right .maplibregl-ctrl{margin:10px 0 0 var(--rads-gap)}
+.maplibregl-ctrl-group{background:#fff!important;border:1px solid var(--rads-border)!important;border-radius:0!important;
+  box-shadow:var(--rads-shadow)!important}
+.maplibregl-ctrl-group button{width:40px;height:40px}
+.maplibregl-ctrl-group button span{filter:none}
+.maplibregl-ctrl-attrib{font-size:10px}
+
+/* everything that now lives inside the panel body */
+.rads-body .panel,.rads-body #info,.rads-body #ctx,.rads-body #areatab,.rads-body #botleft,.rads-body #botright{position:static;transform:none;width:auto;height:auto;opacity:1;
+  border:0;box-shadow:none;background:none;padding:0;margin:0;z-index:auto;backdrop-filter:none}
+.rads-body #info{display:block;font-size:12.5px;line-height:1.45}   /* the app hides it below 720 px */
+.rads-body #info h2{margin:0 0 4px;font-size:13px;color:var(--rads-ink)}
+.rads-body #info .sub{color:var(--mut);margin:8px 0 2px}
+.rads-body #info .tot{display:none}            /* shown in the i note instead */
+.opts label{color:var(--tx);min-height:32px;margin:0}
+.opts input{accent-color:var(--rads-red)}
+.poilist{max-height:none;overflow:visible}
+.btnrow button,.cchip{background:#fff;color:var(--tx);border:1px solid var(--line);border-radius:0;min-height:32px}
+.btnrow button:hover,.cchip:hover{border-color:var(--rads-red);color:var(--rads-red)}
+.cchip{height:auto;padding:4px 8px}
+.cchip.on{background:#fff;border-color:var(--rads-red);color:var(--rads-red)}
+.ucrow{color:var(--tx);border-radius:0;min-height:36px}
+.ucrow:hover{background:var(--rads-hover);border-color:var(--line)}
+.back{color:var(--rads-red);min-height:32px}
+.ramp{border-radius:0}
+
+/* View picker and status line */
+.rads-select{display:block;width:100%;height:var(--rads-ctl);margin-top:4px;padding:0 8px;border:1px solid var(--rads-border);
+  border-radius:0;background:#fff;color:var(--rads-ink);font:inherit;font-size:13px}
+.rads-select:focus-visible{outline:2px solid var(--rads-red);outline-offset:0}
+.rads-body #ctx{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin-top:8px;white-space:normal;
+  font-size:11.5px;color:var(--mut)}
+.rads-body #ctx b{color:var(--rads-ink)}
+.rads-body #ctx:empty{display:none}
+
+/* study-area switch */
+.rads-body #areatab{display:flex;gap:6px;margin-top:4px}
+.abtn{flex:1;min-height:var(--rads-ctl);border:1px solid var(--line);border-radius:0;background:#fff;color:var(--tx);
+  padding:6px 8px;font-size:12.5px}
+.abtn small{color:var(--mut)}
+.abtn:hover{background:var(--rads-hover);color:var(--tx)}
+.abtn.on{background:var(--rads-red);border-color:var(--rads-red);color:#fff}
+.abtn.on small{color:#fff;opacity:.85}
+
+/* 3D / roads / raw height as plain rows */
+.rads-body #botleft{display:block}
+#d3,#rdb,#hraw{display:flex;flex-direction:row;justify-content:space-between;align-items:center;width:100%;height:auto;
+  min-height:var(--rads-ctl);margin:0 0 6px;padding:0 10px;border:1px solid var(--line);border-radius:0;background:#fff;
+  color:var(--tx);box-shadow:none;font-family:inherit;font-weight:600;font-size:13px;line-height:1.3;text-align:left;letter-spacing:0}
+#d3 small,#rdb small,#hraw small{font-size:11px;color:var(--mut);margin:0}
+#d3:hover,#rdb:hover,#hraw:hover{background:var(--rads-hover);color:var(--tx)}
+#d3.on,#rdb.on,#hraw.on{background:var(--rads-red);border-color:var(--rads-red);color:#fff}
+#d3.on small,#rdb.on small,#hraw.on small{color:#fff;opacity:.85}
+#hraw{flex-direction:column;align-items:flex-start;justify-content:center;padding:6px 10px}
+
+/* site card: a capped card bottom left instead of a full-width drawer */
+#dsr{left:var(--rads-gap);right:auto;bottom:var(--rads-gap);width:min(360px,calc(100% - 2*var(--rads-gap)));height:auto;
+  max-height:40%;overflow:auto;z-index:1001;background:#fff;border:1px solid var(--line);padding-bottom:12px}
+#dsr .id{position:static;width:auto;padding:14px 40px 0 18px}
+#dsr .vr{display:none}
+#dsr .facts{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;padding:10px 18px 0;height:auto}
+#dsr .id .nm,#dsr .f .v{color:var(--rads-ink)}
+#dsr .id .ex{color:var(--rads-red)}
+#dsr .id .cd,#dsr .f .v .ad{color:var(--rads-text)}
+#dsr .cl{width:32px;height:32px;border-radius:0;background:#fff;color:var(--mut)}
+#dsr .cl:hover{border-color:var(--rads-red);color:var(--rads-red)}
+
+/* popups */
+.maplibregl-popup-content{background:#fff;color:var(--rads-text);border:1px solid var(--line);border-radius:0;box-shadow:var(--rads-shadow)}
+.maplibregl-popup-tip{border-top-color:#fff!important;border-bottom-color:#fff!important}
+.maplibregl-popup-content b{color:var(--rads-ink)}
+#boot{background:#fff;color:var(--mut)}
 </style></head><body>
 <div id="map"></div>
 <div id="boot">loading&hellip;</div>
@@ -2291,4 +2381,77 @@ function switchArea(key){
 }
 document.querySelectorAll('.abtn').forEach(b=>{ b.onclick=()=>switchArea(b.dataset.area); });
 switchArea(FIRST);
+</script>
+<script>
+/* ===== RADS iframe layout: move the explorer's panels into the chip and one Layers panel ===== */
+(function(){
+  'use strict';
+  var $=function(id){ return document.getElementById(id); };
+  function el(tag, cls, txt){ var n=document.createElement(tag); if(cls) n.className=cls; if(txt) n.textContent=txt; return n; }
+  function sec(title){ var s=el('section','rads-sec'); s.appendChild(el('h2',null,title)); return s; }
+  var mapEl=$('map');
+  function mount(n){ document.body.insertBefore(n, mapEl); }   // before the map in Tab order
+  function resize(){ if(window.__map) window.__map.resize(); }
+
+  /* title chip with the area name and an "i" note for the current view */
+  var chip=el('div','rads-ui rads-chip'); chip.appendChild($('brandName'));
+  var ib=el('button','rads-info-btn'); ib.type='button'; ib.setAttribute('aria-label','About this view');
+  ib.title='About this view'; ib.setAttribute('aria-expanded','false'); ib.setAttribute('aria-controls','rads-note');
+  ib.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="8.1" y="7.6" width="1.8" height="5.6" fill="currentColor"/><rect x="8.1" y="4.4" width="1.8" height="1.8" fill="currentColor"/></svg>';
+  chip.appendChild(ib);
+  var note=el('div','rads-ui rads-popover'); note.id='rads-note'; note.setAttribute('role','dialog');
+  note.setAttribute('aria-label','About this view'); note.hidden=true;
+  mount(chip); mount(note);
+  function setNote(open){ note.hidden=!open; ib.setAttribute('aria-expanded',open?'true':'false'); }
+  ib.addEventListener('click',function(){ setNote(note.hidden); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !note.hidden){ setNote(false); ib.focus(); } });
+  document.addEventListener('pointerdown',function(e){ if(!note.hidden && !note.contains(e.target) && !ib.contains(e.target)) setNote(false); });
+
+  /* the Layers panel */
+  var panel=el('div','rads-ui rads-panel');
+  var tg=el('button','rads-toggle'); tg.type='button'; tg.setAttribute('aria-expanded','false'); tg.setAttribute('aria-controls','rads-body');
+  tg.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1 1 4.5 8 8l7-3.5L8 1Z" fill="currentColor"/><path d="M1 8l7 3.5L15 8M1 11.5 8 15l7-3.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span>Layers</span>';
+  var body=el('div','rads-body'); body.id='rads-body'; body.setAttribute('role','region'); body.setAttribute('aria-label','Map layers');
+  panel.appendChild(tg); panel.appendChild(body); mount(panel);
+
+  var sArea=sec('Study area'); sArea.appendChild($('areatab'));
+  var sView=sec('View');
+  var pick=el('select','rads-select'); pick.setAttribute('aria-label','View');
+  sView.appendChild(pick); sView.appendChild($('screens')); sView.appendChild($('ctx'));
+  var sInfo=el('section','rads-sec'); sInfo.appendChild($('info'));
+  var sMap=sec('Map'); sMap.appendChild($('botleft')); sMap.appendChild($('botright'));
+  [sArea,sView,sInfo,sMap].forEach(function(s){ body.appendChild(s); });
+
+  function setPanel(open){ body.hidden=!open; tg.setAttribute('aria-expanded',open?'true':'false'); resize(); }
+  tg.addEventListener('click',function(){ setPanel(body.hidden); });
+  var q=/[?&#]panel=(open|closed)/.exec(location.search+location.hash);
+  setPanel(q ? q[1]==='open' : window.innerWidth>=600);
+
+  /* View dropdown mirrors the explorer's own screen buttons, which stay hidden and keep doing the work */
+  var screens=$('screens');
+  function syncPick(){
+    var bs=screens.querySelectorAll('.sbtn'); pick.innerHTML='';
+    Array.prototype.forEach.call(bs,function(b,i){
+      var o=el('option',null,b.textContent.trim()); o.value=String(i); o.disabled=b.disabled;
+      if(b.classList.contains('on')) o.selected=true; pick.appendChild(o);
+    });
+  }
+  pick.addEventListener('change',function(){ var b=screens.querySelectorAll('.sbtn')[+pick.value]; if(b) b.click(); });
+  new MutationObserver(syncPick).observe(screens,{childList:true,subtree:true,attributes:true,attributeFilter:['class','disabled']});
+  syncPick();
+
+  /* each view's explanation (.tot) goes into the i note; the button hides when a view has none */
+  var ibody=$('ibody');
+  function syncNote(){
+    var t=Array.prototype.map.call(ibody.querySelectorAll('.tot'),function(n){ return n.textContent.trim(); }).filter(Boolean).join(' ');
+    note.textContent=t; ib.hidden=!t; if(!t) setNote(false);
+  }
+  new MutationObserver(syncNote).observe(ibody,{childList:true,subtree:true,characterData:true});
+  syncNote();
+
+  /* on a small box the site card and an open panel would fight for space */
+  new MutationObserver(function(){
+    if($('dsr').style.display==='block' && window.innerWidth<600 && !body.hidden) setPanel(false);
+  }).observe($('dsr'),{attributes:true,attributeFilter:['style']});
+})();
 </script></body></html>
